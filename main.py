@@ -1,27 +1,34 @@
 import os
 import telebot
+from flask import Flask, request
 
-# የቦት Token ከ Render Environment Variable ይቀበላል
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 bot = telebot.TeleBot(BOT_TOKEN)
 
+app = Flask(__name__)
 
-# ተጠቃሚው /start ሲል የሚሰራ ተግባር
 @bot.message_handler(commands=["start"])
 def send_welcome(message):
-    # የተጠቃሚውን የቴሌግራም ስም ይወስዳል
     first_name = message.from_user.first_name
-
-    # ቦቱ የሚመልሰው መልእክት
     text = (
         f"ሰላም {first_name} 👋\n\n"
         "እንኳን ወደ Telebirr FraudShield bot በሰላም መጡ! "
         "ከታች Open App የሚለውን በተን በመንካት ማስጀመር ይችላሉ።"
     )
-
     bot.reply_to(message, text)
 
+@app.route("/", methods=["POST"])
+def webhook():
+    if request.headers.get("content-type") == "application/json":
+        json_string = request.get_data().decode("utf-8")
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return "OK", 200
+    return "Forbidden", 403
 
-# ቦቱ ሁልጊዜ ክፍት ሆኖ መልእክት እንዲቀበል
-if __name__ == "__main__":
-    bot.infinity_polling()
+@app.route("/", methods=["GET"])
+def index():
+    return "Bot is running!", 200
+
+# Vercel app እንዲያገኘው
+app = app
