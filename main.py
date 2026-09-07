@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 @bot.message_handler(commands=["start"])
 def send_welcome(message):
-    first_name = message.from_user.first_name
+    first_name = message.from_user.first_name if message.from_user else ""
     text = (
         f"ሰላም {first_name} 👋\n\n"
         "እንኳን ወደ Telebirr FraudShield bot በሰላም መጡ! "
@@ -29,6 +29,3 @@ def webhook():
 @app.route("/", methods=["GET"])
 def index():
     return "Bot is running!", 200
-
-# Vercel app እንዲያገኘው
-app = app
